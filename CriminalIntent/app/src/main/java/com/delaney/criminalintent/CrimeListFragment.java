@@ -1,5 +1,6 @@
 package com.delaney.criminalintent;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,6 +22,11 @@ public class CrimeListFragment extends Fragment {
 
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
+    private Crime mCrime;
+    private static final int REQUEST_CRIME = 1;
+    private static final String ARG_CRIME_POSITION = "crime_position";
+
+    int toUpdate;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -50,7 +56,29 @@ public class CrimeListFragment extends Fragment {
             mAdapter = new CrimeAdapter(crimes);
             mCrimeRecyclerView.setAdapter(mAdapter);
         } else {
-            mAdapter.notifyDataSetChanged();
+            Toast.makeText(getActivity(), (toUpdate - 1) + "Inside Update Correct", Toast.LENGTH_SHORT).show();
+            mAdapter.notifyItemChanged(toUpdate - 1);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if (requestCode == REQUEST_CRIME) {
+            if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(getActivity(), "HERE clicked!", Toast.LENGTH_SHORT).show();
+                CrimeLab crimeLab = CrimeLab.get(getActivity());
+                List<Crime> crimes = crimeLab.getCrimes();
+                String adjusted = CrimeFragment.returnId(data);
+                Toast.makeText(getActivity(), "HERE clicked!", Toast.LENGTH_SHORT).show();
+                int size = crimes.size();
+                for (int i = 0; i < size; i++) {
+                    if (crimes.get(i).getId().toString().equals(adjusted)) {
+                        toUpdate = i;
+                        Toast.makeText(getActivity(), (toUpdate -1) + " clicked!", Toast.LENGTH_SHORT).show();
+                        i = size;
+                    }
+                }
+            }
         }
     }
 
@@ -82,7 +110,7 @@ public class CrimeListFragment extends Fragment {
         @Override
         public void onClick(View v) {
             Intent intent = CrimePagerActivity.newIntent(getActivity(), mCrime.getId());
-            startActivity(intent);
+            startActivityForResult(intent, REQUEST_CRIME);
         }
     }
 
